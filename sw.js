@@ -3,7 +3,7 @@
 // （stale-while-revalidate）。ファイルを更新すると、次回起動時に新しい内容が反映される。
 // キャッシュするファイルを増減したときは CACHE_NAME の番号を上げる。
 
-var CACHE_NAME = 'shiren6-price-v1';
+var CACHE_NAME = 'shiren6-price-v2';
 
 // パスは sw.js からの相対パス（GitHub Pages のサブパス配信に対応）
 var PRECACHE_URLS = [
@@ -12,6 +12,7 @@ var PRECACHE_URLS = [
   'css/style.css',
   'js/app.js',
   'data/items.js',
+  'data/appearance.js',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',

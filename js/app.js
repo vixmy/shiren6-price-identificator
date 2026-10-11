@@ -3,7 +3,7 @@
   'use strict';
 
   // アプリのバージョン（画面下部に小さく表示する）
-  var APP_VERSION = '1.0.0';
+  var APP_VERSION = '1.1.0';
 
   var MAX_DIGITS = 6;
 
@@ -20,10 +20,15 @@
   var STATES = ['normal', 'blessed', 'cursed'];
   var STATE_LABELS = { normal: '通常', blessed: '祝福', cursed: '呪い' };
 
+  // 出所（data/appearance.js のキー。並びはボタンの並びと同じ）
+  var SOURCES = ['shop', 'buried_shop', 'floor', 'buried', 'island', 'behemoth', 'transform', 'todo', 'steal'];
+
   var priceInput = document.getElementById('price-input');
   var keypad = document.getElementById('keypad');
   var keypadToggle = document.getElementById('keypad-toggle');
   var filters = document.querySelector('.filters');
+  var dungeonSelect = document.getElementById('dungeon-select');
+  var sourceFilters = document.getElementById('sources');
   var resultsCount = document.getElementById('results-count');
   var resultsMessage = document.getElementById('results-message');
   var resultList = document.getElementById('result-list');
@@ -33,6 +38,14 @@
 
   // 選択中のカテゴリ。何も選んでいないときは「すべて」扱い（永続化しない）
   var selectedCategories = {};
+
+  // 選択中のダンジョン（normal / shinzui / choshinzui。初期値は通常、永続化しない）
+  var dungeon = 'normal';
+  // 選択中の出所。何も選んでいないときは「出所すべて」扱い（永続化しない）
+  var selectedSources = {};
+
+  // ダンジョン → 出所 → { アイテム名: true }（起動時に1回だけ作る）
+  var appearance = buildAppearance(window.SHIREN6_APPEARANCE ? window.SHIREN6_APPEARANCE.dungeons : {});
 
   // 全アイテムを「アイテム × 回数/修正値」単位にまとめ、表示順に並べた一覧（起動時に1回だけ作る）
   var allUnits = buildUnitList(window.SHIREN6_ITEMS ? window.SHIREN6_ITEMS.items : []);
@@ -62,16 +75,42 @@
     return list;
   }
 
+  function buildAppearance(dungeons) {
+    var result = {};
+    Object.keys(dungeons).forEach(function (d) {
+      result[d] = {};
+      SOURCES.forEach(function (src) {
+        var names = {};
+        (dungeons[d].sources[src] || []).forEach(function (name) { names[name] = true; });
+        result[d][src] = names;
+      });
+    });
+    return result;
+  }
+
   // --- 検索 ---
   function isCategoryShown(category) {
     var anySelected = CATEGORIES.some(function (c) { return selectedCategories[c]; });
     return !anySelected || selectedCategories[category];
   }
 
+  // 通常ダンジョンでは全アイテム。神髄・超・神髄では、選択中の出所（未選択なら全出所）の
+  // どれかで出現するアイテムだけ
+  function isAvailable(item) {
+    if (dungeon === 'normal') return true;
+    var bySource = appearance[dungeon];
+    if (!bySource) return true;
+    var anySelected = SOURCES.some(function (src) { return selectedSources[src]; });
+    return SOURCES.some(function (src) {
+      return (!anySelected || selectedSources[src]) && bySource[src][item.name];
+    });
+  }
+
   // どれかの状態の買値・売値が完全一致するユニットを返す
   function search(price) {
     return allUnits.filter(function (unit) {
       if (!isCategoryShown(unit.item.category)) return false;
+      if (!isAvailable(unit.item)) return false;
       return STATES.some(function (s) {
         var p = unit.prices[s];
         return p && (p.buy === price || p.sell === price);
@@ -247,18 +286,24 @@
   // --- カテゴリフィルタ ---
   // 「すべて」状態からカテゴリを押すとそのカテゴリだけ表示。以降押したものを追加/解除。
   // 全部解除したら「すべて」に戻る。
-  function updateFilterButtons() {
-    var anySelected = CATEGORIES.some(function (c) { return selectedCategories[c]; });
-    Array.prototype.forEach.call(filters.querySelectorAll('.filter-btn'), function (btn) {
-      var f = btn.getAttribute('data-filter');
-      var active = f === 'all' ? !anySelected : !!selectedCategories[f];
+  // ボタンの data 属性の値 → 選択状態。「all」ボタンは何も選んでいないときにアクティブ
+  function updateToggleButtons(container, attr, keys, selected) {
+    var anySelected = keys.some(function (k) { return selected[k]; });
+    Array.prototype.forEach.call(container.querySelectorAll('[' + attr + ']'), function (btn) {
+      var key = btn.getAttribute(attr);
+      var active = key === 'all' ? !anySelected : !!selected[key];
       btn.classList.toggle('is-active', active);
       btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
   }
 
+  function updateFilterButtons() {
+    updateToggleButtons(filters, 'data-filter', CATEGORIES, selectedCategories);
+    updateToggleButtons(sourceFilters, 'data-source', SOURCES, selectedSources);
+  }
+
   filters.addEventListener('click', function (e) {
-    var btn = e.target.closest('.filter-btn');
+    var btn = e.target.closest('[data-filter]');
     if (!btn) return;
     var f = btn.getAttribute('data-filter');
     if (f === 'all') {
@@ -266,6 +311,30 @@
     } else {
       selectedCategories[f] = !selectedCategories[f];
     }
+    updateFilterButtons();
+    render();
+  });
+
+  // --- 出所フィルタ（カテゴリフィルタと同じ操作方法） ---
+  sourceFilters.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-source]');
+    if (!btn) return;
+    var src = btn.getAttribute('data-source');
+    if (src === 'all') {
+      selectedSources = {};
+    } else {
+      selectedSources[src] = !selectedSources[src];
+    }
+    updateFilterButtons();
+    render();
+  });
+
+  // --- ダンジョン選択 ---
+  // 神髄・超・神髄のときだけ出所フィルタを出す。ダンジョンを変えたら出所の選択は戻す
+  dungeonSelect.addEventListener('change', function () {
+    dungeon = dungeonSelect.value;
+    selectedSources = {};
+    sourceFilters.hidden = dungeon === 'normal';
     updateFilterButtons();
     render();
   });
@@ -352,6 +421,8 @@
   }
 
   document.getElementById('app-version').textContent = 'v' + APP_VERSION;
+  // リロード時にブラウザが前回の選択を復元することがあるので、初期値（通常）に戻す
+  dungeonSelect.value = 'normal';
   updateFilterButtons();
   render();
 })();

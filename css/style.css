@@ -107,6 +107,19 @@ button {
   color: var(--text-sub);
 }
 
+/* ダンジョン選択（通常 / 神髄 / 超・神髄） */
+.dungeon-select {
+  flex: none;
+  height: 44px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
 /* 2. カテゴリフィルタ */
 /* 7個のボタンを1行に収める。列幅は文字数に応じた比率（すべて/草/巻物/杖/腕輪/壺/武器・盾）、
    文字サイズは画面幅に合わせて伸縮させる */
@@ -151,6 +164,30 @@ button {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
+}
+
+/* 出所フィルタ: ボタンが多いので1行で横スクロール */
+.sources {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.sources::-webkit-scrollbar {
+  display: none;
+}
+
+.sources[hidden] {
+  display: none;
+}
+
+.source-btn {
+  flex: none;
+  padding: 0 10px;
 }
 
 /* 3. 検索結果一覧 */

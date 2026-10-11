@@ -287,11 +287,22 @@ button {
 }
 
 /* テンキーの出し入れボタン（∨ で隠す / ∧ で出す） */
+/* 左: バージョン表記、中央: 出し入れボタン */
+.keypad-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.app-version {
+  font-size: 0.7rem;
+  color: var(--text-sub);
+}
+
 .keypad-toggle {
   display: block;
   width: 96px;
   height: 44px;
-  margin: 0 auto;
   border: none;
   background: transparent;
   color: var(--text-sub);

@@ -2,6 +2,9 @@
 (function () {
   'use strict';
 
+  // アプリのバージョン（画面下部に小さく表示する）
+  var APP_VERSION = '1.0.0';
+
   var MAX_DIGITS = 6;
 
   // カテゴリの表示順と表示名（docs/SPEC.md §5, §8）
@@ -348,6 +351,7 @@
     });
   }
 
+  document.getElementById('app-version').textContent = 'v' + APP_VERSION;
   updateFilterButtons();
   render();
 })();

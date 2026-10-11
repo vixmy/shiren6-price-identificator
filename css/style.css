@@ -108,23 +108,43 @@ button {
 }
 
 /* 2. カテゴリフィルタ */
+/* 7個のボタンを1行に収める。列幅は文字数に応じた比率（すべて/草/巻物/杖/腕輪/壺/武器・盾）、
+   文字サイズは画面幅に合わせて伸縮させる */
 .filters {
   flex: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr)
+    minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1.7fr);
+  gap: 4px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
 }
 
 .filter-btn {
   min-height: 44px;
-  padding: 0 12px;
+  padding: 0 2px;
   border: 1px solid var(--border);
-  border-radius: 22px;
+  border-radius: 10px;
   background: var(--surface);
   color: var(--text-sub);
-  font-size: 0.95rem;
+  font-size: clamp(0.75rem, 3.6vw, 0.95rem);
+  white-space: nowrap;
+}
+
+/* 1行だと押しにくくなるほど狭い画面では、4列×2行にする（武器・盾は2列分） */
+@media (max-width: 340px) {
+  .filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .filter-btn {
+    font-size: 0.85rem;
+  }
+
+  .filter-btn[data-filter="weapon_shield"] {
+    grid-column: span 2;
+  }
 }
 
 .filter-btn.is-active {

@@ -1,0 +1,315 @@
+/* シレン6 値段識別ツール */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #f4efe6;
+  --surface: #fffdf8;
+  --text: #2b2118;
+  --text-sub: #7a6a58;
+  --border: #d8cbb6;
+  --accent: #8a5a2b;
+  --accent-text: #fff;
+  --key-bg: #fffdf8;
+  --key-func-bg: #e8dcc8;
+  --key-active: #d8c7aa;
+  --max-width: 480px;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* 全体: 縦並び。結果一覧だけがスクロールする */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  background: var(--surface);
+  padding-top: env(safe-area-inset-top);
+}
+
+/* 1. 入力表示欄 */
+.price-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.price-input {
+  flex: 1;
+  min-width: 0;
+  height: 56px;
+  padding: 0 12px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 2rem;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.price-input::placeholder {
+  color: var(--text-sub);
+  font-weight: normal;
+  font-size: 1.25rem;
+}
+
+.price-unit {
+  flex: none;
+  font-size: 1.25rem;
+  color: var(--text-sub);
+}
+
+/* 2. カテゴリフィルタ */
+.filters {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.filter-btn {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--surface);
+  color: var(--text-sub);
+  font-size: 0.95rem;
+}
+
+.filter-btn.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* 3. 検索結果一覧 */
+.results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 12px;
+}
+
+.results-message {
+  margin: 24px 0;
+  text-align: center;
+  color: var(--text-sub);
+}
+
+.results-count {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  color: var(--text-sub);
+}
+
+.result-list {
+  padding-bottom: 8px;
+}
+
+/* カテゴリ見出し [草] など */
+.result-section + .result-section {
+  margin-top: 12px;
+}
+
+.section-heading {
+  display: inline-block;
+  margin: 4px 0;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.cat-grass { background: #3f8a3a; }
+.cat-scroll { background: #8a6a2b; }
+.cat-staff { background: #7a4aa0; }
+.cat-bracelet { background: #2f7f8f; }
+.cat-pot { background: #a0522d; }
+.cat-weapon_shield { background: #5a6270; }
+
+/* 価格表が同じアイテムのまとまり */
+.price-group {
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.unit-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+/* 価格セル: 上段 買値・売値、下段 祝福・呪い */
+.price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.price-cell {
+  padding: 2px 8px 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+/* 祝福がないアイテムでも呪いは常に右列 */
+.cell-cursed {
+  grid-column: 2;
+}
+
+.cell-label {
+  font-size: 0.7rem;
+  color: var(--text-sub);
+}
+
+.cell-value {
+  font-size: 1.15rem;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-blessed {
+  background: #fff8dc;
+  border-color: #e0c35a;
+}
+
+.cell-blessed .cell-label {
+  color: #8a6a00;
+}
+
+.cell-cursed {
+  background: #f6ecf9;
+  border-color: #b98acb;
+}
+
+.cell-cursed .cell-label {
+  color: #6a2a80;
+}
+
+.price {
+  padding: 0 3px;
+  border-radius: 4px;
+}
+
+.price-sep {
+  margin: 0 1px;
+  font-weight: normal;
+  color: var(--text-sub);
+}
+
+/* 入力した値段と一致した値 */
+.price.is-hit {
+  background: #ffd84d;
+  font-weight: bold;
+  box-shadow: 0 0 0 1px #c9a000 inset;
+}
+
+/* 4. テンキー（画面下部） */
+.keypad-area {
+  flex: none;
+  padding: 0 12px calc(8px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+/* テンキーの出し入れボタン（∨ で隠す / ∧ で出す） */
+.keypad-toggle {
+  display: block;
+  width: 96px;
+  height: 44px;
+  margin: 0 auto;
+  border: none;
+  background: transparent;
+  color: var(--text-sub);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.keypad[hidden] {
+  display: none;
+}
+
+.key {
+  height: 56px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--key-bg);
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.key-func {
+  background: var(--key-func-bg);
+}
+
+.key:active {
+  background: var(--key-active);
+}
+
+/* PC など広い画面では左右に余白を見せる */
+@media (min-width: 520px) {
+  .app {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+}

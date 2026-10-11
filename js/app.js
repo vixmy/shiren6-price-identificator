@@ -3,7 +3,7 @@
   'use strict';
 
   // アプリのバージョン（画面下部に小さく表示する）
-  var APP_VERSION = '1.2.0';
+  var APP_VERSION = '1.2.1';
 
   var MAX_DIGITS = 6;
 
@@ -330,15 +330,15 @@
     render();
   });
 
-  // --- 出所フィルタ（カテゴリフィルタと同じ操作方法） ---
+  // --- 出所フィルタ（カテゴリフィルタと同じく排他選択） ---
   sourceFilters.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-source]');
     if (!btn) return;
     var src = btn.getAttribute('data-source');
-    if (src === 'all') {
-      selectedSources = {};
-    } else {
-      selectedSources[src] = !selectedSources[src];
+    var wasSelected = !!selectedSources[src];
+    selectedSources = {};
+    if (src !== 'all' && !wasSelected) {
+      selectedSources[src] = true;
     }
     updateFilterButtons();
     render();

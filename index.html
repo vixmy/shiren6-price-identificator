@@ -48,18 +48,20 @@
     </nav>
 
     <!-- 2'. 出所フィルタ（神髄・超・神髄のときだけ表示） -->
-    <nav class="sources" id="sources" aria-label="出所フィルタ" hidden>
-      <button type="button" class="filter-btn source-btn is-active" data-source="all">出所すべて</button>
-      <button type="button" class="filter-btn source-btn" data-source="shop">店売り</button>
-      <button type="button" class="filter-btn source-btn" data-source="buried_shop">壁内店・やりくり</button>
-      <button type="button" class="filter-btn source-btn" data-source="floor">床落ち・敵ドロップ</button>
-      <button type="button" class="filter-btn source-btn" data-source="buried">壁の中</button>
-      <button type="button" class="filter-btn source-btn" data-source="island">浮島・キラ壁・柱など</button>
-      <button type="button" class="filter-btn source-btn" data-source="behemoth">デッ怪報酬</button>
-      <button type="button" class="filter-btn source-btn" data-source="transform">変化の壺</button>
-      <button type="button" class="filter-btn source-btn" data-source="todo">トドドロップ</button>
-      <button type="button" class="filter-btn source-btn" data-source="steal">盗み・弾きなど</button>
-    </nav>
+    <div class="sources-bar" id="sources-bar" hidden>
+      <nav class="sources" id="sources" aria-label="出所フィルタ">
+        <button type="button" class="filter-btn source-btn is-active" data-source="all">出所すべて</button>
+        <button type="button" class="filter-btn source-btn" data-source="shop">店売り</button>
+        <button type="button" class="filter-btn source-btn" data-source="buried_shop">壁内店・やりくり</button>
+        <button type="button" class="filter-btn source-btn" data-source="floor">床落ち・敵ドロップ</button>
+        <button type="button" class="filter-btn source-btn" data-source="buried">壁の中</button>
+        <button type="button" class="filter-btn source-btn" data-source="island">浮島・キラ壁・柱など</button>
+        <button type="button" class="filter-btn source-btn" data-source="behemoth">デッ怪報酬</button>
+        <button type="button" class="filter-btn source-btn" data-source="transform">変化の壺</button>
+        <button type="button" class="filter-btn source-btn" data-source="todo">トドドロップ</button>
+        <button type="button" class="filter-btn source-btn" data-source="steal">盗み・弾きなど</button>
+      </nav>
+    </div>
 
     <!-- 3. 検索結果一覧 -->
     <main class="results" aria-live="polite">

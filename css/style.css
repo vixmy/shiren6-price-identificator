@@ -166,28 +166,58 @@ button {
   color: var(--accent-text);
 }
 
-/* 出所フィルタ: ボタンが多いので1行で横スクロール */
-.sources {
+/* 出所フィルタ: ボタンが多いので1行で横スクロール（マウス操作の端末では折り返す） */
+.sources-bar {
   flex: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.sources-bar[hidden] {
+  display: none;
+}
+
+.sources {
   display: flex;
   gap: 4px;
   padding: 8px 12px;
   overflow-x: auto;
   scrollbar-width: none;
-  border-bottom: 1px solid var(--border);
 }
 
 .sources::-webkit-scrollbar {
   display: none;
 }
 
-.sources[hidden] {
-  display: none;
+/* 続きがある側の端を薄くして、横にスクロールできることを示す（クラスは js/app.js で付け外し） */
+.sources.fade-right {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+}
+
+.sources.fade-left {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 40px);
+  mask-image: linear-gradient(to right, transparent, #000 40px);
+}
+
+.sources.fade-left.fade-right {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent);
 }
 
 .source-btn {
   flex: none;
   padding: 0 10px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sources {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .source-btn {
+    flex: 1 0 auto;
+  }
 }
 
 /* 3. 検索結果一覧 */

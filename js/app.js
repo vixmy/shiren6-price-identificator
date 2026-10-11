@@ -3,7 +3,7 @@
   'use strict';
 
   // アプリのバージョン（画面下部に小さく表示する）
-  var APP_VERSION = '1.1.0';
+  var APP_VERSION = '1.1.2';
 
   var MAX_DIGITS = 6;
 
@@ -28,6 +28,7 @@
   var keypadToggle = document.getElementById('keypad-toggle');
   var filters = document.querySelector('.filters');
   var dungeonSelect = document.getElementById('dungeon-select');
+  var sourcesBar = document.getElementById('sources-bar');
   var sourceFilters = document.getElementById('sources');
   var resultsCount = document.getElementById('results-count');
   var resultsMessage = document.getElementById('results-message');
@@ -329,12 +330,33 @@
     render();
   });
 
+  // PC のマウスホイール（縦回転）でも出所フィルタを横スクロールできるようにする。
+  // 端まで来たら既定の動作に任せる
+  sourceFilters.addEventListener('wheel', function (e) {
+    if (e.ctrlKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    var delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;  // 行単位（Firefox）→ px
+    var max = sourceFilters.scrollWidth - sourceFilters.clientWidth;
+    if ((delta < 0 && sourceFilters.scrollLeft <= 0) || (delta > 0 && sourceFilters.scrollLeft >= max)) return;
+    e.preventDefault();
+    sourceFilters.scrollLeft += delta;
+  }, { passive: false });
+
+  // 横スクロールの続きがある側の端を薄くする（折り返し表示のときはスクロールしないので何も付かない）
+  function updateSourceFade() {
+    var max = sourceFilters.scrollWidth - sourceFilters.clientWidth;
+    sourceFilters.classList.toggle('fade-left', max > 1 && sourceFilters.scrollLeft > 1);
+    sourceFilters.classList.toggle('fade-right', max > 1 && sourceFilters.scrollLeft < max - 1);
+  }
+  sourceFilters.addEventListener('scroll', updateSourceFade, { passive: true });
+  window.addEventListener('resize', updateSourceFade);
+
   // --- ダンジョン選択 ---
   // 神髄・超・神髄のときだけ出所フィルタを出す。ダンジョンを変えたら出所の選択は戻す
   dungeonSelect.addEventListener('change', function () {
     dungeon = dungeonSelect.value;
     selectedSources = {};
-    sourceFilters.hidden = dungeon === 'normal';
+    sourcesBar.hidden = dungeon === 'normal';
+    updateSourceFade();
     updateFilterButtons();
     render();
   });

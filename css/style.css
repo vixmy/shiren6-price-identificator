@@ -338,11 +338,30 @@ button {
   color: var(--text-sub);
 }
 
+/* 一覧表示（値段未入力）での増え方の注記 */
+.price-note {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-sub);
+}
+
 /* 入力した値段と一致した値 */
 .price.is-hit {
   background: #ffd84d;
   font-weight: bold;
   box-shadow: 0 0 0 1px #c9a000 inset;
+}
+
+/* 出典表記（結果一覧の一番下に小さく） */
+.credits {
+  margin: 16px 0 4px;
+  font-size: 0.7rem;
+  color: var(--text-sub);
+  text-align: center;
+}
+
+.credits a {
+  color: inherit;
 }
 
 /* 4. テンキー（画面下部） */

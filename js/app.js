@@ -3,7 +3,7 @@
   'use strict';
 
   // アプリのバージョン（画面下部に小さく表示する）
-  var APP_VERSION = '1.1.2';
+  var APP_VERSION = '1.2.0';
 
   var MAX_DIGITS = 6;
 
@@ -107,11 +107,14 @@
     });
   }
 
-  // どれかの状態の買値・売値が完全一致するユニットを返す
+  // どれかの状態の買値・売値が完全一致するユニットを返す。
+  // price が null（値段未入力）のときは条件に合うアイテムの一覧用に、杖・壺は回数0、
+  // 武器・盾は修正値+0 のユニットだけを返す
   function search(price) {
     return allUnits.filter(function (unit) {
       if (!isCategoryShown(unit.item.category)) return false;
       if (!isAvailable(unit.item)) return false;
+      if (price === null) return unit.modifier === null || unit.modifier === 0;
       return STATES.some(function (s) {
         var p = unit.prices[s];
         return p && (p.buy === price || p.sell === price);
@@ -165,12 +168,19 @@
     render();
   }
 
+  // テキストバーの数字が全選択されているか（タップ直後など）
+  function isAllSelected() {
+    return document.activeElement === priceInput && value !== '' &&
+      priceInput.selectionStart === 0 && priceInput.selectionEnd === priceInput.value.length;
+  }
+
+  // 全選択中はテンキーの入力で置き換える（通常のテキスト入力と同じ動き）
   function appendDigit(d) {
-    setValue(value + d);
+    setValue(isAllSelected() ? d : value + d);
   }
 
   function backspace() {
-    setValue(value.slice(0, -1));
+    setValue(isAllSelected() ? '' : value.slice(0, -1));
   }
 
   function clearAll() {
@@ -181,14 +191,10 @@
   function render() {
     resultList.textContent = '';
 
-    if (value === '') {
-      showMessage('値段を入力してください');
-      return;
-    }
-
-    var price = Number(value);
+    // 値段が空のときは、条件（ダンジョン・出所・カテゴリ）に合うアイテムの価格一覧を出す
+    var price = value === '' ? null : Number(value);
     var units = search(price);
-    resultsCount.textContent = units.length + '件';
+    resultsCount.textContent = units.length + '件' + (price === null ? '（値段を入力すると絞り込みます）' : '');
     resultsCount.hidden = false;
 
     if (units.length === 0) {
@@ -205,12 +211,6 @@
     resultList.appendChild(fragment);
   }
 
-  function showMessage(text) {
-    resultsCount.hidden = true;
-    resultsMessage.textContent = text;
-    resultsMessage.hidden = false;
-  }
-
   // [草] などのカテゴリ見出し + 価格グループの並び
   function createSection(section, price) {
     var el = document.createElement('section');
@@ -223,14 +223,21 @@
   }
 
   // 価格表が同じアイテム名の列 + 価格表（一致した値段をハイライト）
+  // price が null のときは一覧表示: 杖・壺・武器・盾は回数0・+0 の値段と、増え方の注記を出す
   function createGroup(group, price) {
     var el = document.createElement('div');
     el.className = 'price-group';
+    var listing = price === null;
+    var first = group.units[0];
+    var baseLabel = '';
+    if (listing && first.modifier !== null) {
+      baseLabel = first.item.category === 'weapon_shield' ? '（+0）' : '（回数0）';
+    }
 
     var names = document.createElement('div');
     names.className = 'group-names';
     group.units.forEach(function (unit) {
-      names.appendChild(createElement('div', 'unit-name', unitName(unit)));
+      names.appendChild(createElement('div', 'unit-name', listing ? unit.item.name : unitName(unit)));
     });
     el.appendChild(names);
 
@@ -239,8 +246,8 @@
     grid.className = 'price-grid';
     var normal = group.prices.normal;
     if (normal) {
-      grid.appendChild(createCell('cell-normal', '買値', [normal.buy], price));
-      grid.appendChild(createCell('cell-normal', '売値', [normal.sell], price));
+      grid.appendChild(createCell('cell-normal', '買値' + baseLabel, [normal.buy], price));
+      grid.appendChild(createCell('cell-normal', '売値' + baseLabel, [normal.sell], price));
     }
     // 祝福・呪いはデータにある状態だけ表示（腕輪・杖・壺・武器・盾には祝福データを持たせない）
     ['blessed', 'cursed'].forEach(function (s) {
@@ -249,6 +256,12 @@
       grid.appendChild(createCell('cell-' + s, STATE_LABELS[s] + '（買/売）', [p.buy, p.sell], price));
     });
     el.appendChild(grid);
+
+    if (baseLabel) {
+      el.appendChild(createElement('p', 'price-note', first.item.category === 'weapon_shield'
+        ? '※修正値±1ごとに 買±100・売±40'
+        : '※回数+1ごとに 買+100・売+40'));
+    }
 
     return el;
   }
@@ -307,10 +320,11 @@
     var btn = e.target.closest('[data-filter]');
     if (!btn) return;
     var f = btn.getAttribute('data-filter');
-    if (f === 'all') {
-      selectedCategories = {};
-    } else {
-      selectedCategories[f] = !selectedCategories[f];
+    // 排他選択: 押したカテゴリだけを表示。選択中のカテゴリをもう一度押すか「すべて」で全カテゴリに戻る
+    var wasSelected = !!selectedCategories[f];
+    selectedCategories = {};
+    if (f !== 'all' && !wasSelected) {
+      selectedCategories[f] = true;
     }
     updateFilterButtons();
     render();
@@ -397,6 +411,16 @@
   priceInput.addEventListener('input', function () {
     setValue(priceInput.value);
   });
+
+  // クリック・タップしたら入力済みの数字を全選択する（そのまま打てば置き換わる）
+  function selectAllPrice() {
+    priceInput.setSelectionRange(0, priceInput.value.length);
+  }
+  priceInput.addEventListener('focus', function () {
+    // フォーカス直後はブラウザがカーソル位置を決めるので、その後で選択する
+    setTimeout(selectAllPrice, 0);
+  });
+  priceInput.addEventListener('click', selectAllPrice);
 
   // --- 物理キーボード（ページ上どこでも） ---
   function digitFromEvent(e) {

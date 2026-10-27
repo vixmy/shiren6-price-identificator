@@ -27,13 +27,14 @@
   var kind = null;         // 選んだアイテムの種類（weapon | shield）。未選択は null
   var itemIndex = -1;      // DATA[kind].items の添字
   var jingi = false;
-  var seals = [];          // 選んだ印の label（選んだ順）
-  var digitCount = 0;      // 数字の印の個数
+  var seals = [];          // 追加で選んだ印の label（選んだ順。固有の印は含めない）
+  var digitCount = 0;      // 追加で選んだ数字の印の個数（固有の数字の印は含めない）
 
   // --- 計算（[D] note の計算式。tools/build_weapons.py の冒頭も参照） ---
   // 買値 = (元の買値 × 神器補正 + 修正値 × 100 + 印の買値) × 呪い補正
   // 売値 = (元の買値 × 神器補正 × 0.4 + 修正値 × 40 + 印の売値) × 呪い補正
   // 武器・盾の値段は50の倍数なので × 0.4 で端数は出ない。呪いは最後に 0.87 倍して切り捨て
+  // 固有の印は元の値段に含まれているので足さない（seals・digitCount は追加分だけ）
   function sealTotal() {
     var d = DATA[kind];
     var total = { buy: d.digit.buy * digitCount, sell: d.digit.sell * digitCount };
@@ -45,8 +46,21 @@
     return total;
   }
 
+  function currentItem() {
+    return DATA[kind].items[itemIndex];
+  }
+
+  // 固有の印（なければ null）と固有の数字の印の個数
+  function innateSeal() {
+    return kind === null ? null : (currentItem().innate || null);
+  }
+
+  function innateDigits() {
+    return kind === null ? 0 : (currentItem().innateDigits || 0);
+  }
+
   function calcPrices(plus) {
-    var base = DATA[kind].items[itemIndex].buy * (jingi ? 2 : 1);
+    var base = currentItem().buy * (jingi ? 2 : 1);
     var seal = sealTotal();
     var buy = base + plus * 100 + seal.buy;
     var sell = base * 2 / 5 + plus * 40 + seal.sell;
@@ -67,20 +81,23 @@
 
   function renderSummary() {
     var selected = kind !== null;
-    nameEl.textContent = selected ? DATA[kind].items[itemIndex].name : '武器か盾を選んでください';
+    nameEl.textContent = selected ? currentItem().name : '武器か盾を選んでください';
     nameEl.classList.toggle('is-empty', !selected);
     jingiBtn.classList.toggle('is-active', jingi);
     jingiBtn.setAttribute('aria-pressed', jingi ? 'true' : 'false');
 
-    // 選んだ印（タップで外す）
+    // 固有の印（外せない）+ 追加で選んだ印（タップで外す）
     chipsEl.textContent = '';
+    var innate = innateSeal();
+    if (innate) chipsEl.appendChild(createInnateChip(innate));
+    if (innateDigits() > 0) chipsEl.appendChild(createInnateChip('数字×' + innateDigits()));
     seals.forEach(function (label) {
       chipsEl.appendChild(createChip(label, 'seal', label));
     });
     if (digitCount > 0) {
       chipsEl.appendChild(createChip('数字×' + digitCount, 'digit', ''));
     }
-    chipsEl.hidden = seals.length === 0 && digitCount === 0;
+    chipsEl.hidden = chipsEl.childNodes.length === 0;
 
     tableWrap.hidden = !selected;
     rowsEl.textContent = '';
@@ -104,6 +121,12 @@
     chip.setAttribute('data-chip', type);
     chip.setAttribute('data-label', label);
     chip.setAttribute('aria-label', text + 'を外す');
+    return chip;
+  }
+
+  function createInnateChip(text) {
+    var chip = createElement('span', 'ws-chip is-innate', text);
+    chip.setAttribute('title', '固有の印（元の値段に含まれる）');
     return chip;
   }
 
@@ -163,28 +186,36 @@
       return;
     }
     var d = DATA[kind];
-    picker.appendChild(createElement('p', 'ws-hint', '最初から付いている印は選ばない（元の値段に含まれる）'));
+    var innate = innateSeal();
+    picker.appendChild(createElement('p', 'ws-hint', innate || innateDigits() > 0
+      ? '「固有」の印は最初から付いている印（元の値段に含まれるので足さない）'
+      : 'この' + KIND_LABELS[kind] + 'には固有の印はない'));
 
     var grid = createElement('div', 'ws-grid ws-grid-seals', '');
     d.seals.forEach(function (s) {
-      var btn = createElement('button', 'ws-option ws-seal' + (seals.indexOf(s.label) >= 0 ? ' is-active' : ''), '');
+      var isInnate = s.label === innate;
+      var active = isInnate || seals.indexOf(s.label) >= 0;
+      var btn = createElement('button', 'ws-option ws-seal' + (active ? ' is-active' : '') + (isInnate ? ' is-innate' : ''), '');
       btn.type = 'button';
       btn.setAttribute('data-seal', s.label);
-      btn.setAttribute('aria-pressed', seals.indexOf(s.label) >= 0 ? 'true' : 'false');
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      if (isInnate) btn.disabled = true;
       btn.appendChild(createElement('span', 'ws-seal-label', s.label));
-      btn.appendChild(createElement('span', 'ws-seal-price', String(s.buy)));
+      btn.appendChild(createElement('span', 'ws-seal-price', isInnate ? '固有' : String(s.buy)));
       grid.appendChild(btn);
     });
 
-    // 数字の印（0〜9 は同じ値段なので1つにまとめ、個数で指定する）
-    var digit = createElement('div', 'ws-digit' + (digitCount > 0 ? ' is-active' : ''), '');
+    // 数字の印（0〜9 は同じ値段なので1つにまとめ、個数で指定する）。
+    // 個数は固有の数字の印を含めて表示し、固有の分より減らせない
+    var total = innateDigits() + digitCount;
+    var digit = createElement('div', 'ws-digit' + (total > 0 ? ' is-active' : ''), '');
     var label = createElement('span', 'ws-digit-label', '');
     label.appendChild(createElement('span', 'ws-seal-label', '数字'));
-    label.appendChild(createElement('span', 'ws-seal-price', d.digit.buy + '/個'));
+    label.appendChild(createElement('span', 'ws-seal-price', d.digit.buy + '/個' + (innateDigits() > 0 ? '（固有' + innateDigits() + '）' : '')));
     digit.appendChild(label);
     digit.appendChild(createStepButton('−', -1, '数字の印を減らす', digitCount === 0));
-    digit.appendChild(createElement('span', 'ws-digit-count', String(digitCount)));
-    digit.appendChild(createStepButton('＋', 1, '数字の印を増やす', digitCount >= MAX_DIGIT_SEALS));
+    digit.appendChild(createElement('span', 'ws-digit-count', String(total)));
+    digit.appendChild(createStepButton('＋', 1, '数字の印を増やす', total >= MAX_DIGIT_SEALS));
     grid.appendChild(digit);
 
     picker.appendChild(grid);
@@ -238,7 +269,7 @@
   }
 
   function setDigitCount(n) {
-    digitCount = Math.max(0, Math.min(MAX_DIGIT_SEALS, n));
+    digitCount = Math.max(0, Math.min(MAX_DIGIT_SEALS - innateDigits(), n));
     render();
   }
 

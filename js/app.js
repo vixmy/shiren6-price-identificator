@@ -3,7 +3,7 @@
   'use strict';
 
   // アプリのバージョン（画面下部に小さく表示する）
-  var APP_VERSION = '1.3.0';
+  var APP_VERSION = '1.3.1';
 
   var MAX_DIGITS = 6;
 

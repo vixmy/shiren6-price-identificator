@@ -610,6 +610,24 @@ button {
   color: var(--text-sub);
 }
 
+/* 固有の印（外せない） */
+.ws-chip.is-innate {
+  display: inline-flex;
+  align-items: center;
+  border-style: dashed;
+  background: var(--surface);
+  color: var(--text-sub);
+}
+
+.ws-chip.is-innate::before {
+  content: "固有 ";
+  font-size: 0.7rem;
+}
+
+.ws-chip.is-innate::after {
+  content: none;
+}
+
 /* 修正値ごとの値段表 */
 .ws-table-wrap {
   margin-top: 8px;
@@ -750,6 +768,20 @@ button {
 
 .ws-option.is-active:active {
   background: var(--accent);
+}
+
+/* 固有の印のボタン（選択済みのまま押せない） */
+.ws-option.is-innate {
+  background: var(--key-func-bg);
+  border: 1px dashed var(--accent);
+  color: var(--text);
+  cursor: default;
+}
+
+.ws-option.is-innate .ws-seal-price {
+  color: var(--accent);
+  font-weight: bold;
+  opacity: 1;
 }
 
 /* 印ボタン: 上に印、下に小さく買値 */

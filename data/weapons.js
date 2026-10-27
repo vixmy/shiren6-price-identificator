@@ -82,6 +82,7 @@ window.SHIREN6_WEAPONS = {
       {"label": "金", "buy": 1000, "sell": 350, "type": "normal"},
       {"label": "腹力", "buy": 1000, "sell": 350, "type": "normal"},
       {"label": "飢", "buy": 1000, "sell": 350, "type": "normal"},
+      {"label": "底", "buy": 1000, "sell": 350, "type": "natural"},
       {"label": "ス", "buy": 500, "sell": 175, "type": "normal"},
       {"label": "溜4", "buy": 500, "sell": 175, "type": "normal"},
       {"label": "掘", "buy": 500, "sell": 175, "type": "normal"},

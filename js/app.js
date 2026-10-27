@@ -3,7 +3,7 @@
   'use strict';
 
   // アプリのバージョン（画面下部に小さく表示する）
-  var APP_VERSION = '1.4.0';
+  var APP_VERSION = '1.5.0';
 
   var MAX_DIGITS = 6;
 
@@ -36,6 +36,10 @@
 
   // 現在の入力値（正規化済みの数字文字列。空文字は未入力）
   var value = '';
+
+  // テンキーを出し直したときの「全選択」状態。テキストバーにフォーカスを移さずに
+  // （ソフトキーボードを出さずに）、次の入力で置き換え・⌫ で全消去にする
+  var replacePending = false;
 
   // 選択中のカテゴリ。何も選んでいないときは「すべて」扱い（永続化しない）
   var selectedCategories = {};
@@ -158,7 +162,13 @@
     return digits.slice(0, MAX_DIGITS);
   }
 
+  function setReplacePending(on) {
+    replacePending = on;
+    priceInput.classList.toggle('is-selected', on);
+  }
+
   function setValue(next) {
+    setReplacePending(false);
     next = normalize(next);
     if (priceInput.value !== next) {
       priceInput.value = next;
@@ -170,6 +180,7 @@
 
   // テキストバーの数字が全選択されているか（タップ直後など）
   function isAllSelected() {
+    if (replacePending) return true;
     return document.activeElement === priceInput && value !== '' &&
       priceInput.selectionStart === 0 && priceInput.selectionEnd === priceInput.value.length;
   }
@@ -405,6 +416,8 @@
     keypadToggle.textContent = show ? '∨' : '∧';
     keypadToggle.setAttribute('aria-expanded', show ? 'true' : 'false');
     keypadToggle.setAttribute('aria-label', show ? 'テンキーを隠す' : 'テンキーを出す');
+    // 出し直したら入力済みの値段を全選択扱いにする（そのまま次の値段を打てば置き換わる）
+    setReplacePending(show && value !== '');
   });
 
   // --- テキストバー直接入力 ---
@@ -417,6 +430,7 @@
     priceInput.setSelectionRange(0, priceInput.value.length);
   }
   priceInput.addEventListener('focus', function () {
+    setReplacePending(false);  // フォーカス後はブラウザ本来の全選択に任せる
     // フォーカス直後はブラウザがカーソル位置を決めるので、その後で選択する
     setTimeout(selectAllPrice, 0);
   });

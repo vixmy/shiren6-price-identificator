@@ -95,6 +95,12 @@ button {
   border-color: var(--accent);
 }
 
+/* テンキーを出し直したときの全選択状態（次の入力で置き換わる） */
+.price-input.is-selected {
+  border-color: var(--accent);
+  background: #cfe0fb;
+}
+
 .price-input::placeholder {
   color: var(--text-sub);
   font-weight: normal;
@@ -936,4 +942,88 @@ button {
   .ws-step:hover:not(:disabled) {
     border-color: var(--accent);
   }
+}
+
+/* ===== 使い方（PC など広い画面のときだけ、左右の空きスペースに出す） ===== */
+.side-help {
+  display: none;
+}
+
+@media (min-width: 1000px) and (hover: hover) and (pointer: fine) {
+  .side-help {
+    display: block;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: calc(50% - var(--max-width) / 2);
+    max-width: 440px;
+    overflow-y: auto;
+    padding: 24px 28px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .side-help-left {
+    right: calc(50% + var(--max-width) / 2);
+  }
+
+  .side-help-right {
+    left: calc(50% + var(--max-width) / 2);
+  }
+}
+
+.side-help h2 {
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--accent);
+  font-size: 1.1rem;
+  color: var(--accent);
+}
+
+.side-help h3 {
+  margin: 16px 0 4px;
+  font-size: 0.95rem;
+}
+
+.side-help p {
+  margin: 0 0 8px;
+}
+
+.side-help ul,
+.side-help ol {
+  margin: 0;
+  padding-left: 1.3em;
+}
+
+.side-help li + li {
+  margin-top: 4px;
+}
+
+.side-help kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 5px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.side-help .help-seal {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid var(--seal);
+  border-radius: 4px;
+  background: var(--seal-bg);
+  font-size: 0.8rem;
+}
+
+.side-help-note {
+  margin-top: 16px !important;
+  color: var(--text-sub);
 }

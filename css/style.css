@@ -944,32 +944,153 @@ button {
   }
 }
 
-/* ===== 使い方（PC など広い画面のときだけ、左右の空きスペースに出す） ===== */
+/* ===== 使い方 =====
+   スマホなど: ? ボタンで下からシートとして出す。PC（広い画面・マウス操作）: 左右の空きスペースに常に出す */
+.help-btn {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 1.15rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.help-btn:active {
+  background: var(--key-active);
+}
+
+/* 武器・盾画面の見出しバー（茶色の背景）の上に置くとき */
+.help-btn-on-accent {
+  border-color: var(--accent-text);
+  background: transparent;
+  color: var(--accent-text);
+}
+
+.help-btn-on-accent:active {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.view-header-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 4px;
+}
+
 .side-help {
   display: none;
 }
 
+.side-help.is-open {
+  display: block;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  max-width: var(--max-width);
+  max-height: 85vh;
+  max-height: 85dvh;
+  margin: 0 auto;
+  overflow-y: auto;
+  padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+  border-radius: 16px 16px 0 0;
+  background: var(--surface);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.help-backdrop {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 29;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.help-backdrop[hidden] {
+  display: none;
+}
+
+.help-close {
+  float: right;
+  width: 44px;
+  height: 44px;
+  margin: -8px -8px 0 8px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-sub);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.help-close:active {
+  background: var(--key-active);
+}
+
+.help-pc-only,
+.help-pc-inline {
+  display: none;
+}
+
 @media (min-width: 1000px) and (hover: hover) and (pointer: fine) {
-  .side-help {
+  .side-help,
+  .side-help.is-open {
     display: block;
     position: fixed;
     top: 0;
     bottom: 0;
+    z-index: auto;
     width: calc(50% - var(--max-width) / 2);
     max-width: 440px;
+    max-height: none;
+    margin: 0;
     overflow-y: auto;
     padding: 24px 28px;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
     font-size: 0.9rem;
     line-height: 1.7;
     color: var(--text);
   }
 
-  .side-help-left {
+  .side-help-left,
+  .side-help-left.is-open {
+    left: auto;
     right: calc(50% + var(--max-width) / 2);
   }
 
-  .side-help-right {
+  .side-help-right,
+  .side-help-right.is-open {
     left: calc(50% + var(--max-width) / 2);
+    right: auto;
+  }
+
+  .help-btn,
+  .help-close,
+  .help-backdrop,
+  .help-mobile-only {
+    display: none !important;
+  }
+
+  .help-pc-only {
+    display: list-item;
+  }
+
+  .help-pc-inline {
+    display: inline;
   }
 }
 

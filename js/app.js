@@ -3,7 +3,7 @@
   'use strict';
 
   // アプリのバージョン（画面下部に小さく表示する）
-  var APP_VERSION = '1.5.0';
+  var APP_VERSION = '1.5.1';
 
   var MAX_DIGITS = 6;
 
@@ -471,6 +471,45 @@
       clearAll();
     }
   });
+
+  // --- 使い方（? ボタンで下から出す。PC では左右に常に出ているので CSS でボタンごと隠している）---
+  var helpBackdrop = document.getElementById('help-backdrop');
+  var openHelp = null;  // 開いている使い方の要素
+
+  function showHelp(id) {
+    hideHelp();
+    openHelp = document.getElementById(id);
+    if (!openHelp) return;
+    openHelp.classList.add('is-open');
+    openHelp.scrollTop = 0;
+    helpBackdrop.hidden = false;
+  }
+
+  function hideHelp() {
+    if (!openHelp) return;
+    openHelp.classList.remove('is-open');
+    openHelp = null;
+    helpBackdrop.hidden = true;
+  }
+
+  // ? ボタンは値段検索・武器・盾の両画面にあるので、まとめて document で受ける
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-help]');
+    if (btn) {
+      showHelp(btn.getAttribute('data-help'));
+    } else if (e.target.closest('.help-close') || e.target === helpBackdrop) {
+      hideHelp();
+    }
+  });
+
+  // 使い方を開いている間の Escape は使い方を閉じるだけにする（値段の全消去・画面を戻る処理より先に受ける）
+  window.addEventListener('keydown', function (e) {
+    if (openHelp && e.key === 'Escape') {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      hideHelp();
+    }
+  }, true);
 
   // --- Service Worker（オフライン対応）---
   // file:// で開いたときは登録できないので http(s) のときだけ登録する

@@ -34,6 +34,7 @@
         <option value="shinzui">神髄</option>
         <option value="choshinzui">超・神髄</option>
       </select>
+      <button type="button" class="help-btn" data-help="help-price" aria-label="値段検索の使い方">?</button>
     </header>
 
     <!-- 2. カテゴリフィルタ -->
@@ -104,7 +105,10 @@
     <header class="view-header">
       <button type="button" class="back-btn" id="weapon-back" aria-label="値段検索に戻る">‹ 値段検索</button>
       <h1 class="view-title">武器・盾の値段</h1>
-      <button type="button" class="ws-reset" id="ws-reset">リセット</button>
+      <div class="view-header-actions">
+        <button type="button" class="ws-reset" id="ws-reset">リセット</button>
+        <button type="button" class="help-btn help-btn-on-accent" data-help="help-weapon" aria-label="武器・盾の値段の使い方">?</button>
+      </div>
     </header>
 
     <!-- 選択中の内容と計算結果 -->
@@ -143,16 +147,18 @@
     <div class="ws-picker" id="ws-picker"></div>
   </div>
 
-  <!-- 使い方（PC など広い画面のときだけ、左右の空きスペースに出す） -->
-  <aside class="side-help side-help-left" aria-label="値段検索の使い方">
+  <!-- 使い方。PC など広い画面では左右の空きスペースに常に出し、
+       それ以外では ? ボタンで下から出す（help-pc-only / help-mobile-only で出し分け） -->
+  <div class="help-backdrop" id="help-backdrop" hidden></div>
+  <aside class="side-help side-help-left" id="help-price" aria-label="値段検索の使い方">
+    <button type="button" class="help-close" aria-label="使い方を閉じる">×</button>
     <h2>値段検索の使い方</h2>
     <p>店で見た値段（買値・売値どちらでも）を入力すると、その値段に一致するアイテムを表示します。</p>
     <h3>値段の入力</h3>
     <ul>
-      <li>キーボードの数字キーでそのまま入力できます（入力欄を選ぶ必要はありません）。</li>
-      <li><kbd>Backspace</kbd> で1文字削除、<kbd>Esc</kbd> / <kbd>Delete</kbd> で全消去。</li>
-      <li>画面下のテンキーでも入力できます。<kbd>∨</kbd> で隠し、<kbd>∧</kbd> で出します。出し直すと入力済みの値段が選択状態になり、次に打った値段で置き換わります。</li>
-      <li>入力欄をクリックすると数字が全選択され、そのまま打てば置き換わります。</li>
+      <li class="help-pc-only">キーボードの数字キーでそのまま入力できます（入力欄を選ぶ必要はありません）。</li>
+      <li class="help-pc-only"><kbd>Backspace</kbd> で1文字削除、<kbd>Esc</kbd> / <kbd>Delete</kbd> で全消去。</li>
+      <li>画面下のテンキーでも入力できます。<kbd>∨</kbd> で隠し、<kbd>∧</kbd> で出します。</li>
     </ul>
     <h3>結果の見方</h3>
     <ul>
@@ -165,13 +171,20 @@
       <li>カテゴリのボタンを押すとそのカテゴリだけを表示。もう一度押すか「すべて」で戻ります。</li>
       <li>右上で「神髄」「超・神髄」を選ぶと、そのダンジョンに出るアイテムだけになり、出所（店売り・床落ちなど）でも絞り込めます。</li>
     </ul>
+    <div class="help-mobile-only">
+      <h3>武器・盾の値段</h3>
+      <ul>
+        <li>テンキーの右上の「武器・盾の値段 ›」で、武器・盾の種類・印・神器から値段を計算する画面を開きます。</li>
+      </ul>
+    </div>
   </aside>
-  <aside class="side-help side-help-right" aria-label="武器・盾の値段の使い方">
+  <aside class="side-help side-help-right" id="help-weapon" aria-label="武器・盾の値段の使い方">
+    <button type="button" class="help-close" aria-label="使い方を閉じる">×</button>
     <h2>武器・盾の値段の使い方</h2>
     <p>武器・盾の種類・印・神器から値段を計算します。店の値段と見比べて、呪われているかを判断できます。</p>
     <h3>手順</h3>
     <ol>
-      <li>テンキーの右上の「武器・盾の値段 ›」で開きます。</li>
+      <li class="help-pc-only">テンキーの右上の「武器・盾の値段 ›」で開きます。</li>
       <li>「武器」「盾」のタブから種類を選びます（選ぶと印のタブに切り替わります）。</li>
       <li>付いている印を押します。もう一度押すと外れます。数字の印は <kbd>−</kbd> <kbd>＋</kbd> で個数を指定します。</li>
       <li>神器なら「神器」を押します。</li>
@@ -186,7 +199,7 @@
       <li>武器・盾にもともと付いている固有の印は最初から選択済みです（元の値段に含まれるので加算しません）。</li>
       <li>色: <span class="help-seal seal-normal">通常印</span> <span class="help-seal seal-natural">天然印</span> <span class="help-seal seal-hybrid">異種合成</span></li>
     </ul>
-    <p class="side-help-note"><kbd>Esc</kbd> または「‹ 値段検索」で値段検索に戻ります。</p>
+    <p class="side-help-note"><span class="help-pc-inline"><kbd>Esc</kbd> または</span>「‹ 値段検索」で値段検索に戻ります。</p>
   </aside>
 
   <script src="data/items.js"></script>

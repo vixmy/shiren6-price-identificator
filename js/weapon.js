@@ -8,6 +8,8 @@
   var PLUS_VALUES = [-1, 0, 1, 2, 3];
   var MAX_DIGIT_SEALS = 9;
   var KIND_LABELS = { weapon: '武器', shield: '盾' };
+  // 印の種類（wiki の印ページの色分け）。ボタン・チップの色に使う
+  var SEAL_TYPE_LABELS = { normal: '通常印', natural: '天然印', hybrid: '異種合成' };
 
   var appEl = document.querySelector('.app');
   var view = document.getElementById('weapon-view');
@@ -89,13 +91,14 @@
     // 固有の印（外せない）+ 追加で選んだ印（タップで外す）
     chipsEl.textContent = '';
     var innate = innateSeal();
-    if (innate) chipsEl.appendChild(createInnateChip(innate));
-    if (innateDigits() > 0) chipsEl.appendChild(createInnateChip('数字×' + innateDigits()));
+    // 固有の数字の印は「7」（通常印）だけなので、数字のチップでも通常印の色にする
+    if (innate) chipsEl.appendChild(createInnateChip(innate, sealTypeOf(innate)));
+    if (innateDigits() > 0) chipsEl.appendChild(createInnateChip('数字×' + innateDigits(), 'normal'));
     seals.forEach(function (label) {
-      chipsEl.appendChild(createChip(label, 'seal', label));
+      chipsEl.appendChild(createChip(label, 'seal', label, sealTypeOf(label)));
     });
     if (digitCount > 0) {
-      chipsEl.appendChild(createChip('数字×' + digitCount, 'digit', ''));
+      chipsEl.appendChild(createChip('数字×' + digitCount, 'digit', '', DATA[kind].digit.type));
     }
     chipsEl.hidden = chipsEl.childNodes.length === 0;
 
@@ -115,8 +118,13 @@
     });
   }
 
-  function createChip(text, type, label) {
-    var chip = createElement('button', 'ws-chip', text);
+  function sealTypeOf(label) {
+    var found = DATA[kind].seals.filter(function (s) { return s.label === label; })[0];
+    return found ? found.type : 'normal';
+  }
+
+  function createChip(text, type, label, sealType) {
+    var chip = createElement('button', 'ws-chip seal-' + sealType, text);
     chip.type = 'button';
     chip.setAttribute('data-chip', type);
     chip.setAttribute('data-label', label);
@@ -124,8 +132,8 @@
     return chip;
   }
 
-  function createInnateChip(text) {
-    var chip = createElement('span', 'ws-chip is-innate', text);
+  function createInnateChip(text, sealType) {
+    var chip = createElement('span', 'ws-chip is-innate seal-' + sealType, text);
     chip.setAttribute('title', '固有の印（元の値段に含まれる）');
     return chip;
   }
@@ -190,12 +198,13 @@
     picker.appendChild(createElement('p', 'ws-hint', innate || innateDigits() > 0
       ? '「固有」の印は最初から付いている印（元の値段に含まれるので足さない）'
       : 'この' + KIND_LABELS[kind] + 'には固有の印はない'));
+    picker.appendChild(createLegend());
 
     var grid = createElement('div', 'ws-grid ws-grid-seals', '');
     d.seals.forEach(function (s) {
       var isInnate = s.label === innate;
       var active = isInnate || seals.indexOf(s.label) >= 0;
-      var btn = createElement('button', 'ws-option ws-seal' + (active ? ' is-active' : '') + (isInnate ? ' is-innate' : ''), '');
+      var btn = createElement('button', 'ws-option ws-seal seal-' + s.type + (active ? ' is-active' : '') + (isInnate ? ' is-innate' : ''), '');
       btn.type = 'button';
       btn.setAttribute('data-seal', s.label);
       btn.setAttribute('aria-pressed', active ? 'true' : 'false');
@@ -208,7 +217,7 @@
     // 数字の印（0〜9 は同じ値段なので1つにまとめ、個数で指定する）。
     // 個数は固有の数字の印を含めて表示し、固有の分より減らせない
     var total = innateDigits() + digitCount;
-    var digit = createElement('div', 'ws-digit' + (total > 0 ? ' is-active' : ''), '');
+    var digit = createElement('div', 'ws-digit seal-' + d.digit.type + (total > 0 ? ' is-active' : ''), '');
     var label = createElement('span', 'ws-digit-label', '');
     label.appendChild(createElement('span', 'ws-seal-label', '数字'));
     label.appendChild(createElement('span', 'ws-seal-price', d.digit.buy + '/個' + (innateDigits() > 0 ? '（固有' + innateDigits() + '）' : '')));
@@ -219,6 +228,15 @@
     grid.appendChild(digit);
 
     picker.appendChild(grid);
+  }
+
+  // 色の凡例: ■通常印 ■天然印 ■異種合成
+  function createLegend() {
+    var legend = createElement('div', 'ws-legend', '');
+    Object.keys(SEAL_TYPE_LABELS).forEach(function (t) {
+      legend.appendChild(createElement('span', 'ws-legend-item seal-' + t, SEAL_TYPE_LABELS[t]));
+    });
+    return legend;
   }
 
   function createStepButton(text, step, ariaLabel, disabled) {

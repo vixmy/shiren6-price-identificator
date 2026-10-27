@@ -605,6 +605,11 @@ button {
   font-size: 0.9rem;
 }
 
+.ws-chip[class*="seal-"] {
+  border-color: var(--seal);
+  background: var(--seal-bg);
+}
+
 .ws-chip::after {
   content: " ×";
   color: var(--text-sub);
@@ -615,7 +620,6 @@ button {
   display: inline-flex;
   align-items: center;
   border-style: dashed;
-  background: var(--surface);
   color: var(--text-sub);
 }
 
@@ -770,18 +774,77 @@ button {
   background: var(--accent);
 }
 
-/* 固有の印のボタン（選択済みのまま押せない） */
-.ws-option.is-innate {
-  background: var(--key-func-bg);
-  border: 1px dashed var(--accent);
-  color: var(--text);
+/* 印の種類の色（wiki の印ページの色分け: 通常印 = 青、天然印 = 黄、異種合成 = 緑）
+   --seal: 枠線、--seal-bg: 未選択の背景、--seal-solid / --seal-on: 選択中の背景と文字 */
+.seal-normal {
+  --seal: #3a32c3;
+  --seal-bg: #ecebfb;
+  --seal-solid: #3a32c3;
+  --seal-on: #fff;
+}
+
+.seal-natural {
+  --seal: #b09c00;
+  --seal-bg: #fffbdc;
+  --seal-solid: #ffdf1a;
+  --seal-on: #3b3200;
+}
+
+.seal-hybrid {
+  --seal: #009e25;
+  --seal-bg: #e3f5e7;
+  --seal-solid: #009e25;
+  --seal-on: #fff;
+}
+
+.ws-option.ws-seal {
+  background: var(--seal-bg);
+  border-color: var(--seal);
+}
+
+.ws-option.ws-seal:active {
+  background: var(--key-active);
+}
+
+.ws-option.ws-seal.is-active,
+.ws-option.ws-seal.is-active:active {
+  background: var(--seal-solid);
+  border-color: var(--seal);
+  color: var(--seal-on);
+}
+
+/* 固有の印のボタン（選択済みのまま押せない）: 内側に点線 */
+.ws-option.ws-seal.is-innate {
+  outline: 2px dashed var(--seal-on);
+  outline-offset: -5px;
   cursor: default;
 }
 
 .ws-option.is-innate .ws-seal-price {
-  color: var(--accent);
   font-weight: bold;
   opacity: 1;
+}
+
+/* 色の凡例 */
+.ws-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: -4px 0 8px;
+  font-size: 0.75rem;
+  color: var(--text-sub);
+}
+
+.ws-legend-item::before {
+  content: "";
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: 3px;
+  border: 1px solid var(--seal);
+  border-radius: 3px;
+  background: var(--seal-solid);
+  vertical-align: -0.1em;
 }
 
 /* 印ボタン: 上に印、下に小さく買値 */
@@ -820,9 +883,13 @@ button {
   background: var(--surface);
 }
 
+.ws-digit[class*="seal-"] {
+  border-color: var(--seal);
+  background: var(--seal-bg);
+}
+
 .ws-digit.is-active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent) inset;
+  box-shadow: 0 0 0 2px var(--seal) inset;
 }
 
 .ws-digit-label {

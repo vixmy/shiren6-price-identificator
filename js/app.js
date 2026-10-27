@@ -3,7 +3,7 @@
   'use strict';
 
   // アプリのバージョン（画面下部に小さく表示する）
-  var APP_VERSION = '1.2.1';
+  var APP_VERSION = '1.3.0';
 
   var MAX_DIGITS = 6;
 
@@ -432,6 +432,8 @@
 
   document.addEventListener('keydown', function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    // 武器・盾の値段画面を開いている間は値段入力を受け付けない（js/weapon.js が扱う）
+    if (document.body.classList.contains('is-weapon-open')) return;
 
     // テキストバーにフォーカスがあるときは、ブラウザ標準の編集 + input イベントに任せる
     // （ここで処理すると二重入力になる）。全消去キーだけは扱う。

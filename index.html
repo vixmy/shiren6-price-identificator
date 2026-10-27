@@ -80,6 +80,7 @@
       <div class="keypad-bar">
         <span class="app-version" id="app-version"></span>
         <button type="button" class="keypad-toggle" id="keypad-toggle" aria-controls="keypad" aria-expanded="true" aria-label="テンキーを隠す">∨</button>
+        <button type="button" class="weapon-open" id="weapon-open">武器・盾の値段 ›</button>
       </div>
       <div class="keypad" id="keypad">
         <button type="button" class="key" data-key="7">7</button>
@@ -98,8 +99,54 @@
     </div>
   </div>
 
+  <!-- 武器・盾の値段計算（別ページのように右から重ねて出す。docs/SPEC.md §12） -->
+  <div class="weapon-view" id="weapon-view" role="region" aria-label="武器・盾の値段" aria-hidden="true" inert>
+    <header class="view-header">
+      <button type="button" class="back-btn" id="weapon-back" aria-label="値段検索に戻る">‹ 値段検索</button>
+      <h1 class="view-title">武器・盾の値段</h1>
+      <button type="button" class="ws-reset" id="ws-reset">リセット</button>
+    </header>
+
+    <!-- 選択中の内容と計算結果 -->
+    <section class="ws-summary">
+      <div class="ws-head">
+        <span class="ws-name is-empty" id="ws-name">武器か盾を選んでください</span>
+        <button type="button" class="ws-jingi" id="ws-jingi" aria-pressed="false">神器</button>
+      </div>
+      <div class="ws-chips" id="ws-chips"></div>
+      <div class="ws-table-wrap" id="ws-table-wrap" hidden>
+        <table class="ws-table">
+          <thead>
+            <tr>
+              <th rowspan="2" class="col-plus">修正値</th>
+              <th colspan="2" class="col-normal">通常</th>
+              <th colspan="2" class="col-cursed">呪い</th>
+            </tr>
+            <tr>
+              <th class="col-normal">買値</th>
+              <th class="col-normal">売値</th>
+              <th class="col-cursed">買値</th>
+              <th class="col-cursed">売値</th>
+            </tr>
+          </thead>
+          <tbody id="ws-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 選択: 武器 / 盾 / 印 -->
+    <nav class="ws-tabs" id="ws-tabs" role="tablist">
+      <button type="button" class="ws-tab is-active" data-tab="weapon" role="tab" aria-selected="true">武器</button>
+      <button type="button" class="ws-tab" data-tab="shield" role="tab" aria-selected="false">盾</button>
+      <button type="button" class="ws-tab" data-tab="seal" role="tab" aria-selected="false">印</button>
+    </nav>
+    <div class="ws-picker" id="ws-picker"></div>
+  </div>
+
   <script src="data/items.js"></script>
   <script src="data/appearance.js"></script>
+  <script src="data/weapons.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/weapon.js"></script>
 </body>
 </html>

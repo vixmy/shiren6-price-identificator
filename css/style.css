@@ -373,7 +373,7 @@ button {
 }
 
 /* テンキーの出し入れボタン（∨ で隠す / ∧ で出す） */
-/* 左: バージョン表記、中央: 出し入れボタン */
+/* 左: バージョン表記、中央: 出し入れボタン、右: 武器・盾の値段画面へ */
 .keypad-bar {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -423,10 +423,418 @@ button {
   background: var(--key-active);
 }
 
+/* 武器・盾の値段画面を開くボタン */
+.weapon-open {
+  justify-self: end;
+  min-height: 36px;
+  margin: 4px 0;
+  padding: 0 10px;
+  border: 1px solid var(--accent);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.weapon-open:active {
+  background: var(--key-active);
+}
+
 /* PC など広い画面では左右に余白を見せる */
 @media (min-width: 520px) {
   .app {
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
+  }
+}
+
+/* ===== 武器・盾の値段画面（docs/SPEC.md §12） ===== */
+/* 値段検索画面の上に、右からスライドして重ねる */
+.weapon-view {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
+  background: var(--surface);
+  transform: translateX(100vw);
+  visibility: hidden;
+  transition: transform 0.25s ease, visibility 0s linear 0.25s;
+}
+
+.is-weapon-open .weapon-view {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weapon-view,
+  .is-weapon-open .weapon-view {
+    transition: none;
+  }
+}
+
+@media (min-width: 520px) {
+  .weapon-view {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+}
+
+/* 見出しバー: 戻る / タイトル / リセット */
+.view-header {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 4px;
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.back-btn,
+.ws-reset {
+  min-height: 48px;
+  padding: 0 10px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 0.95rem;
+}
+
+.back-btn {
+  justify-self: start;
+  font-weight: bold;
+}
+
+.ws-reset {
+  justify-self: end;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.back-btn:active,
+.ws-reset:active {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.view-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+/* 選択中の内容と計算結果（スクロールしない） */
+.ws-summary {
+  flex: none;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ws-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ws-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.25rem;
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.ws-name.is-empty {
+  font-size: 1rem;
+  font-weight: normal;
+  color: var(--text-sub);
+}
+
+/* 神器（ON で買値・売値の元の値段が2倍） */
+.ws-jingi {
+  flex: none;
+  min-width: 72px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #c9a000;
+  border-radius: 10px;
+  background: var(--surface);
+  color: #8a6a00;
+  font-weight: bold;
+}
+
+.ws-jingi.is-active {
+  background: #e0b400;
+  border-color: #e0b400;
+  color: #fff;
+}
+
+.ws-jingi.is-active::before {
+  content: "✓ ";
+}
+
+/* 選んだ印（タップで外す） */
+.ws-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.ws-chips[hidden] {
+  display: none;
+}
+
+.ws-chip {
+  min-height: 32px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.ws-chip::after {
+  content: " ×";
+  color: var(--text-sub);
+}
+
+/* 修正値ごとの値段表 */
+.ws-table-wrap {
+  margin-top: 8px;
+}
+
+.ws-table-wrap[hidden] {
+  display: none;
+}
+
+.ws-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-table th,
+.ws-table td {
+  padding: 3px 4px;
+  border: 1px solid var(--border);
+  text-align: right;
+}
+
+.ws-table thead th {
+  font-size: 0.7rem;
+  font-weight: normal;
+  color: var(--text-sub);
+  text-align: center;
+}
+
+.ws-table .col-plus {
+  width: 16%;
+  text-align: center;
+}
+
+.ws-table tbody th {
+  font-weight: bold;
+  color: var(--text-sub);
+}
+
+.ws-table td {
+  font-size: clamp(0.95rem, 4.2vw, 1.1rem);
+  font-weight: bold;
+}
+
+.ws-table thead .col-normal {
+  background: var(--bg);
+}
+
+.ws-table .col-cursed {
+  background: #f6ecf9;
+}
+
+.ws-table thead .col-cursed {
+  color: #6a2a80;
+}
+
+.ws-table tbody .col-cursed {
+  color: #6a2a80;
+}
+
+.ws-table tr.is-zero th,
+.ws-table tr.is-zero td {
+  border-top: 2px solid var(--text-sub);
+  border-bottom: 2px solid var(--text-sub);
+}
+
+/* タブ: 武器 / 盾 / 印 */
+.ws-tabs {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr;
+  gap: 4px;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.ws-tab {
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  background: var(--bg);
+  color: var(--text-sub);
+  font-size: 0.95rem;
+}
+
+.ws-tab.is-active {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: bold;
+  box-shadow: 0 3px 0 -1px var(--accent) inset;
+}
+
+/* 選択肢（スクロールする） */
+.ws-picker {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
+}
+
+.ws-grid {
+  display: grid;
+  gap: 6px;
+}
+
+.ws-grid-items {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ws-grid-seals {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.ws-option {
+  min-height: 48px;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.ws-option.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.ws-option:active {
+  background: var(--key-active);
+}
+
+.ws-option.is-active:active {
+  background: var(--accent);
+}
+
+/* 印ボタン: 上に印、下に小さく買値 */
+.ws-seal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ws-seal-label {
+  font-size: 1.05rem;
+  font-weight: bold;
+}
+
+.ws-seal-price {
+  font-size: 0.65rem;
+  color: var(--text-sub);
+}
+
+.ws-option.is-active .ws-seal-price {
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* 数字の印: − 個数 ＋ */
+.ws-digit {
+  grid-column: span 3;
+  display: grid;
+  grid-template-columns: 1fr 44px 32px 44px;
+  align-items: center;
+  min-height: 48px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.ws-digit.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+.ws-digit-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ws-digit-count {
+  font-size: 1.15rem;
+  font-weight: bold;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-step {
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--key-func-bg);
+  font-size: 1.2rem;
+}
+
+.ws-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.ws-hint,
+.ws-message {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  color: var(--text-sub);
+}
+
+.ws-message {
+  margin: 24px 0;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+@media (hover: hover) {
+  .ws-option:hover:not(.is-active),
+  .ws-step:hover:not(:disabled) {
+    border-color: var(--accent);
   }
 }
